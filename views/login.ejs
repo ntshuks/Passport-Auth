@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="#">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('./partials/messages'); %>
+    <title>Login</title>
+</head>
+<body>
+    <h5>Login</h5>
+    <div>
+        <form id="login-form" class="login-form" action="/login" method="post">
+            <input id="email" name="email" type="email" placeholder="Enter Email" action="/login" required maxlength="50">
+            <input id="password" name="password" type="password" placeholder="Enter Password" required maxlength="20">
+            <button type="submit">Login</button>
+        </form>
+    </div>
+    
+</body>
+</html>

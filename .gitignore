@@ -1,0 +1,6 @@
+# Ignore the dotenv folder
+.env
+
+# Igmore the instance specific files node created
+package-lock.json
+node_modules/
