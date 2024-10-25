@@ -1,11 +1,17 @@
-<% if(msg){ %> 
-    <div>
-      <%= msg %>
-    </div>
-    <% } %>
-
     <% if(messages.error){ %> 
       <div>
         <%= messages.error %>
       </div>
       <% } %>
+
+      <% if(error_msg){ %> 
+        <div>
+          <%= error_msg %>
+        </div>
+        <% } %>
+
+        <% if(success_msg){ %> 
+          <div>
+            <%= success_msg %>
+          </div>
+          <% } %>
