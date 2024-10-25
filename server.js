@@ -20,6 +20,8 @@ const store = new MongoDBStore({
     collection: 'mySessions' 
 });
 
+let msg;
+
 // bring in passport config
 const PassportConfig = require('./passport-config.js');
 PassportConfig(passport);
@@ -33,9 +35,6 @@ store.on('error', (error) => {
 });
 
 app.set('view engine', 'ejs');
-
-//Flash messages
-app.use(flash());
 
 // Static file folder
 app.use(express.static('public'));
@@ -58,6 +57,18 @@ app.use(session({
     //   },
 }));
 
+//Flash messages - after session set up
+app.use(flash());
+
+// Make Flash messages available
+app.use((req, res, next) => {
+    res.locals.msg = msg;
+    //res.locals.error_msg = errormsg;
+    console.log('Inside app use');
+        console.log(res.locals.msg);
+    next();
+});
+
 //passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
@@ -73,10 +84,12 @@ app.get('/', IsNotAuthed, (req,res) => {
 });
 
 app.get('/register', IsNotAuthed, (req,res) => {
+    res.locals.msg = '';
     res.render('register');
 });
 
 app.get('/login', IsNotAuthed, (req,res) => {
+    res.locals.msg = '';
     res.render('login');
 });
 
@@ -90,29 +103,33 @@ app.get('/logout', (req,res,next) => {
       if (err) {
         return next(err);
       }
-      res.redirect('./');
+      res.redirect('/');
     })
 });
 
 app.post('/register', (req,res) => {
     const email = req.body.email;
     const plainPassword = req.body.password;
-    let msg;
     //check to see if emial already registered
     User.findOne({email: email})
     .then((user) => {
         if (user) {
             console.log(user);
-            msg = `Email: ${email} already registered`;
-            res.render('register', {msg});
+            let text= `Email: ${email} already registered`;
+            msg = MakeMessage(text);
+            //console.log(req.flash(error_msg));
+            console.log(msg);
+            res.redirect('/register');
         } else {
         //  create new user
+        let text ='';
         bcrypt.hash(plainPassword, saltrounds, (err,hash) => {
             if(err) throw err;
         User.create({ email: email, password: hash })
         .then(() => console.log("User created"))
-        .then( (msg = "You are now registered. Please login"))
-        .then(res.render('login', {msg}))
+        .then( text = "You are now registered. Please login")
+        .then( MakeMessage(text))
+        .then(res.redirect('/login'))
         .catch ((err) => console.log(err));    
            })
         }
@@ -121,13 +138,12 @@ app.post('/register', (req,res) => {
      }); 
 
 app.post('/login', passport.authenticate('local', 
-    {failureRedirect: '/login', failureMessage: true }),(req,res) => {
+    {failureRedirect: '/login', failureFlash: true }),(req,res) => {
     // If it drops here, the authentication was successful
-    let msg;
-    // set session cookie sesion value - not needed for passport
-    //req.session.loggedIn=true;
-    msg = "welcome to the secret page";
-    res.render('secret', {msg});
+    //req.flash('success_msg', 'welcome to the very secret page');
+    let text = "welcome to the very secret page";
+    MakeMessage(text);
+    res.redirect('/secret');
 });
 
 function IsAuthed(req,res,next) {
@@ -136,9 +152,9 @@ function IsAuthed(req,res,next) {
    if (req.isAuthenticated()) {
     next();
     } else {
-        let msg;
-        msg = "You need to be logged in to access that page";
-        res.render('login', {msg});
+        let text = "You need to be logged in to access that page";
+        MakeMessage(text);
+        res.redirect('login');
     }
 }
 
@@ -148,10 +164,18 @@ function IsNotAuthed(req,res,next) {
     if (!req.isAuthenticated()) {
      next();
      } else {
-         let msg;
-         msg = "You need lo log out first";
-         res.render('secret', {msg});
+        let text ="You need to log out first";
+        MakeMessage(text);
+         res.redirect('/secret');
      }
+ }
+
+ function MakeMessage(text) {
+    //clear previous messages
+    msg = text;
+    console.log('Inside MakeMessage');
+    console.log(msg);
+    return(msg);
  }
 
 

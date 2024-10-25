@@ -1,11 +1,11 @@
-<% if(locals.msg){ %> 
+<% if(msg){ %> 
     <div>
       <%= msg %>
     </div>
     <% } %>
 
-    <% if (messages.error) { %>
+    <% if(messages.error){ %> 
       <div>
-      <%= messages.error %>
+        <%= messages.error %>
       </div>
-    <% } %>
+      <% } %>
